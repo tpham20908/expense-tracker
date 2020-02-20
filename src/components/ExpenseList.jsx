@@ -1,61 +1,48 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
 import axios from "axios";
 
 import { apiEndpoint } from "../constants";
 import Expense from "./Expense";
+import * as expenseActions from "../redux/actions/expenseAction";
 
-const ExpenseList = () => {
-  // TODO: Redux store
-  const [expenses, setExpenses] = useState([]);
-  const [subTotal, setSubTotal] = useState(0);
+const ExpenseList = props => {
+  const { expenses, deletingExpense, setExpenses } = props;
 
   useEffect(() => {
     axios
       .get(`${apiEndpoint}/expenses`)
-      .then(res => {
-        const expenseList = res.data;
-        const totalAmount = expenseList.reduce(
-          (accAmount, expense) => accAmount + expense.amount,
-          0
-        );
-
-        setExpenses(expenseList);
-        setSubTotal(totalAmount);
-      })
+      .then(res => setExpenses(res.data))
       .catch(err => console.log("Error: " + err));
-  }, []);
+  }, [setExpenses]);
 
   const expenseList = () =>
-    expenses.map(expense => (
-      <Expense
-        expense={expense}
-        deleteExpense={deleteExpense}
-        key={expense._id}
-      />
+    expenses.map((expense, id) => (
+      <Expense expense={expense} deleteExpense={deleteExpense} key={id} />
     ));
 
   const deleteExpense = id => {
-    // update state
-    // TODO: update Redux store
-    const newExpenses = expenses.filter(expense => expense._id !== id);
-    setExpenses(newExpenses);
+    deletingExpense(id);
 
-    // update db
     axios
       .delete(`${apiEndpoint}/expenses/${id}`)
       .then(res => console.log(res.data))
       .catch(err => console.log("Error: " + err));
   };
 
+  const getSubTotal = () =>
+    expenses.reduce((total, expense) => total + expense.amount, 0);
+
   return (
     <div>
       <h3>Expense Tracker</h3>
       <div className="float-left">
         <p>
-          The sub-total of expenses is: {parseFloat(subTotal).toFixed(2)} ${" "}
+          The sub-total of expenses is: {parseFloat(getSubTotal()).toFixed(2)} $
         </p>
-        <p>The total with taxes is {(subTotal * 1.15).toFixed(2)} $</p>
+        <p>The total with taxes is {(getSubTotal() * 1.15).toFixed(2)} $</p>
       </div>
       <Link to={"/create"} className="btn btn-success float-right">
         Add new expense
@@ -76,4 +63,18 @@ const ExpenseList = () => {
   );
 };
 
-export default ExpenseList;
+const mapStateToProps = ({ expenses }) => ({ expenses });
+
+const mapDispatchToProps = dispatch => ({
+  deletingExpense: expenseId =>
+    dispatch(expenseActions.deleteExpense(expenseId)),
+  setExpenses: expenseList => dispatch(expenseActions.setExpenses(expenseList))
+});
+
+ExpenseList.propTypes = {
+  expenses: PropTypes.array,
+  deletingExpense: PropTypes.func.isRequired,
+  setExpenses: PropTypes.func.isRequired
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ExpenseList);

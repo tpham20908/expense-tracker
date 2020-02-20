@@ -18,15 +18,14 @@ const Expense = ({ expense, deleteExpense }) => {
           <Link to={`/edit/${expense._id}`} className="btn btn-warning mr-2">
             Edit
           </Link>
-          <a
+          <button
             className="btn btn-danger"
-            href="#"
             onClick={() => {
               deleteExpense(expense._id);
             }}
           >
             Delete
-          </a>
+          </button>
         </div>
       </td>
     </tr>

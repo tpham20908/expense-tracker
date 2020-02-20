@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { connect } from "react-redux";
+import PropTypes from "prop-types";
 import DatePicker from "react-datepicker";
 import axios from "axios";
 import "react-datepicker/dist/react-datepicker.css";
 
 import { apiEndpoint } from "../constants";
+import { editExpense } from "../redux/actions/expenseAction";
 
-const EditExpense = ({ history, match }) => {
+const EditExpense = ({ editExpense, history, match }) => {
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date());
   const [description, setDescription] = useState("");
@@ -24,14 +27,16 @@ const EditExpense = ({ history, match }) => {
         setDate(new Date(date));
       })
       .catch(err => console.log("Error: " + err));
-  }, []);
+  }, [expenseId]);
 
-  const onSubmit = e => {
+  const onSubmit = async e => {
     e.preventDefault();
 
     const expense = { description, amount, date };
 
-    axios
+    editExpense(expense, expenseId);
+
+    await axios
       .post(`${apiEndpoint}/expenses/update/${expenseId}`, expense)
       .then(res => console.log(res.data))
       .catch(err => console.error("Error: " + err));
@@ -88,4 +93,13 @@ const EditExpense = ({ history, match }) => {
   );
 };
 
-export default EditExpense;
+const mapDispatchToProps = dispatch => ({
+  editExpense: (expense, expenseId) => dispatch(editExpense(expense, expenseId))
+});
+
+EditExpense.propTypes = {
+  editExpense: PropTypes.func.isRequired,
+  history: PropTypes.object.isRequired
+};
+
+export default connect(null, mapDispatchToProps)(EditExpense);
