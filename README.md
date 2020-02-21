@@ -27,8 +27,6 @@
 git clone https://github.com/tpham20908/expense-tracker.git
 ```
 
-### Setup
-
 - Go to project folder
 
 ```shell
