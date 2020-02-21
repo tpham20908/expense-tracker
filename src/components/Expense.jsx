@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
 
 import formatDate from "../utils/formatDate";
 
@@ -30,6 +31,11 @@ const Expense = ({ expense, deleteExpense }) => {
       </td>
     </tr>
   );
+};
+
+Expense.propTypes = {
+  expense: PropTypes.object,
+  deleteExpense: PropTypes.func.isRequired
 };
 
 export default Expense;
